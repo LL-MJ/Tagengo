@@ -1,0 +1,3 @@
+const defaultUrl='https://tagengo-study.mydexiaomail.chatgpt.site/';
+chrome.runtime.onInstalled.addListener(()=>{chrome.contextMenus.create({id:'capture',title:'加入 Tagengo 日语学习库',contexts:['selection'],documentUrlPatterns:['https://chatgpt.com/*']})});
+chrome.contextMenus.onClicked.addListener(async(info)=>{if(info.menuItemId!=='capture')return;const settings=await chrome.storage.local.get('libraryUrl');const url=new URL(settings.libraryUrl||defaultUrl);if(url.protocol!=='https:'&&!(url.protocol==='http:'&&['localhost','127.0.0.1'].includes(url.hostname)))return;url.hash=new URLSearchParams({capture:(info.selectionText||'').slice(0,12000),source:info.pageUrl||'ChatGPT 网页'}).toString();await chrome.tabs.create({url:url.href})});

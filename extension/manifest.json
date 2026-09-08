@@ -1,0 +1,1 @@
+{"manifest_version":3,"name":"Tagengo 日语收录","version":"0.1.0","description":"将 ChatGPT 网页中选中的日语送到学习库，预览后保存。","permissions":["contextMenus","storage"],"background":{"service_worker":"background.js"},"action":{"default_popup":"popup.html"}}
