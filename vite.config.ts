@@ -46,9 +46,25 @@ export default defineConfig(async () => {
 
   return {
     css: { postcss: { plugins: [tailwindcss()] } },
-    server: isCodexSeatbeltSandbox
-      ? { watch: { useFsEvents: false, usePolling: true } }
-      : undefined,
+    server: {
+      fs: {deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', '**/.local-data/**']},
+      ...(isCodexSeatbeltSandbox
+        ? { watch: { useFsEvents: false, usePolling: true } }
+        : {}),
+      ...(process.env.TAGENGO_LOCAL_GIT === '1'
+        ? {
+            host: '127.0.0.1',
+            port: 3000,
+            strictPort: true,
+            proxy: {
+              '/api/git': {
+                target: 'http://127.0.0.1:4319',
+                changeOrigin: false,
+              },
+            },
+          }
+        : {}),
+    },
     plugins: [
       vinext(),
       sites(),

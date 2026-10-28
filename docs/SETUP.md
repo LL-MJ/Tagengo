@@ -1,30 +1,46 @@
-# Tagengo：个人日语学习库
+# 两台 PC 使用私有 Git 数据仓库
 
-使用 ChatGPT 网页收录扩展录入内容，网页应用显示单词、例句和语法，OneDrive 应用文件夹保存学习记录。两台电脑和手机使用同一微软个人账号与同一个应用 ID。
+代码：`https://github.com/LL-MJ/Tagengo.git`
+数据：`https://github.com/LL-MJ/Tagengo-data.git`（私有）
 
-## OneDrive 首次配置
+## 每台电脑首次使用
 
-1. 在 Microsoft Entra 管理中心注册应用。支持账户类型选择“仅个人 Microsoft 帐户”，或包含个人 Microsoft 帐户的选项。
-2. 添加“单页应用程序 (SPA)”平台。重定向 URI 必须与实际访问学习库的网址完全一致（包括结尾斜杠）。部署地址预期为 `https://tagengo-study.mydexiaomail.chatgpt.site/`；实际部署成功后以最终地址为准。
-3. 在 Microsoft Graph 委托权限中加入 `Files.ReadWrite.AppFolder`。
-4. 复制“应用程序(客户端) ID”，在学习库“连接 OneDrive”中填写。
-5. 两台电脑、手机使用同一个应用 ID；各设备分别登录并授权。
+1. 安装 Node.js 24 和 Git。
+2. 配置本机 GitHub 登录，确保能读取和推送私有数据仓库。可使用 Git Credential Manager，或者安装 GitHub CLI 后运行 `gh auth login`，选择 GitHub.com、HTTPS 和浏览器登录，再执行 `gh auth setup-git`。
+3. 下载或克隆最新 Tagengo 程序源码，在项目目录运行 `npm install`。
+4. 双击项目根目录的 `启动学习库.cmd`，或运行 `npm run local`。第一次会自动克隆数据仓库到 `.local-data/Tagengo-data`。
+5. 打开 `http://localhost:3000/`，点击“同步”获取最新记录。
 
-不需要创建或分享客户端密码。个人微软账号可以授权 OneDrive；但注册应用仍需要可访问应用注册的 Entra 目录。如果注册入口不可用，需要先解决目录/应用注册访问，不能仅凭 OneDrive 账号完成开发者配置。
+Git 首次提交若提示缺少作者信息，请在数据仓库目录设置 `git config user.name "你的名字"` 和 `git config user.email "你的 GitHub 提交邮箱"`，然后重试同步。不要把 GitHub 密码或访问令牌填进这些字段。
 
-官方资料：
-- https://learn.microsoft.com/en-us/graph/onedrive-sharepoint-appfolder
-- https://learn.microsoft.com/en-us/entra/msal/javascript/browser/initialization
+## 每天使用
 
-## 数据原则
+- 双击 `启动学习库.cmd`，等待浏览器自动打开。服务在后台运行，重复点击会打开已有服务。也可手动运行 `npm run local` 并保留终端。
+- 学习前点击同步。
+- 新增、编辑、导入会先写入本机文件，断网也可保存（首次克隆需要网络）。
+- 学习结束后点击同步，确认出现“已同步到私有仓库”。
+- 使用完双击 `停止学习库.cmd`。关闭浏览器不会停止后台服务；如果是手动从终端启动，请在原终端按 Ctrl+C。
+- 可右键启动文件，选择“发送到 → 桌面快捷方式”。不要把启动文件单独移出项目目录。
+- 启动失败会弹出提示；后台日志保存在 `.local-data/launcher/stdout.log` 和 `stderr.log`。
 
-- 单词保存表记（汉字可空）、假名、罗马音、释义、词性和活用。
-- 例句只保存一次，通过稳定 ID 关联多个词和语法。高亮采用明确文本范围，可由用户调整。
-- 语法保存含义、接续、使用条件及关联例句。
-- 每次保存产生独立版本，保留父版本 ID；同一记录多个并行版本提示冲突，不按设备时间静默覆盖。
-- OneDrive 为跨设备保存来源，本机缓存/待上传队列用于断网恢复。未同步内容必须明确显示。
-- 数据不通过聊天网页或网页托管服务的应用后端保存。
+## 数据文件
 
-## ChatGPT 网页录入
+`words/<词条编号>/<版本编号>.json`、`sentences/<例句编号>/<版本编号>.json`、`grammar/<语法编号>/<版本编号>.json`。
+每个版本包含完整内容及父版本编号。为了避免两台电脑修改一个文件时互相覆盖，每次编辑都会新增版本文件。可以阅读这些 JSON，但请通过学习库修改，不要直接覆写历史版本。
 
-第一版采用用户主动收录：选中文字后打开学习库录入草稿。支持 GPT 按约定 JSON 格式整理后导入。不会自动抓取整个聊天历史，不声称 GPT 已拥有直接写入权限。
+两台 PC 同时改一条记录时，页面保留两个版本供选择。上传失败保留本地提交，再次同步即可重试；遇到实际 Git 文件冲突时会中止合并并提示，不执行强制推送。
+
+数据目录位于代码目录内部，但被 `.gitignore` 排除，是独立 Git 仓库。不要删掉 `.local-data`，也不要把它复制到公开代码仓库。
+
+## 迁移旧记录
+
+旧在线版、本地版与不同浏览器的存储彼此独立。在原页面点击“导出”，到本地版点击“导入”选择 JSON、预览并确认，最后同步。
+同一浏览器、同一 localhost 地址的旧草稿，也可在“Git 数据仓库”设置中点击“导入此浏览器的旧草稿”。这个按钮不会读取其他网站或 OneDrive 账号缓存。
+
+## ChatGPT 网页扩展
+
+按 `extension/README.md` 安装。学习库地址使用 `http://localhost:3000/`，先启动本地程序再收录。以前装过扩展的电脑，需要在扩展弹窗中手动更新保存的网址。
+
+## 手机
+
+本版本不开放电脑局域网端口，手机暂时不能通过学习界面读取 Git 仓库。后续需要另做经过授权的手机网页读取方式。不要把数据仓库改成公开以实现手机访问。

@@ -1,4 +1,4 @@
-const fallback='https://tagengo-study.mydexiaomail.chatgpt.site/';
+const fallback='http://localhost:3000/';
 const field=document.getElementById('url'),status=document.getElementById('status');
 chrome.storage.local.get('libraryUrl').then(s=>field.value=s.libraryUrl||fallback);
 function valid(){const url=new URL(field.value);if(url.protocol!=='https:'&&!(url.protocol==='http:'&&['localhost','127.0.0.1'].includes(url.hostname)))throw Error('请填写 HTTPS 网址或本机预览地址');return url.href}

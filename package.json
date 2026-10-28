@@ -6,6 +6,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "local": "node --experimental-strip-types scripts/local.mjs",
+    "sync:data": "node --experimental-strip-types scripts/local.mjs --sync-only",
+    "test": "node --experimental-strip-types --test --test-isolation=none tests/*.test.mjs",
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
